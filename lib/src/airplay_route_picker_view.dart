@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -21,7 +20,6 @@ class AirPlayRoutePickerView extends StatefulWidget {
   }) : super(key: key);
 
   /// Whether or not the route picker should sort video capable output devices to the top of the list.
-  /// Setting this to `true` will cause the route picker view to show a videocentric icon.
   final bool prioritizesVideoDevices;
 
   /// All of the attributes of this widget will effect the appearance of the
@@ -89,7 +87,7 @@ class _AirPlayRoutePickerViewState extends State<AirPlayRoutePickerView> {
   }
 
   void _onPlatformViewCreated(int id) {
-    final name = '${FlutterToAirplay.name}#$id';
+    final name = '${FlutterToAirplay.name}#$id';  // Ensuring that `FlutterToAirplay.name` is accessible.
 
     if (_methodChannel?.name != name) {
       _disposeChannel();

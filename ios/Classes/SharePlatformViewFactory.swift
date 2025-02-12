@@ -9,26 +9,33 @@ import Foundation
 import Flutter
 
 class SharePlatformViewFactory: NSObject, FlutterPlatformViewFactory {
-    let _messenger : FlutterBinaryMessenger
+    let _messenger: FlutterBinaryMessenger
+    let pluginInstance: SwiftFlutterToAirplayPlugin  // Add a reference to the plugin instance
 
-    init(messenger: FlutterBinaryMessenger & NSObjectProtocol) {
+    init(messenger: FlutterBinaryMessenger & NSObjectProtocol, pluginInstance: SwiftFlutterToAirplayPlugin) {
         _messenger = messenger
+        self.pluginInstance = pluginInstance  // Initialize the plugin instance
     }
 
     func create(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?) -> FlutterPlatformView {
-        let argumens = args as! Dictionary<String, Any>;
-        if let viewClass = argumens["class"] {
-            let vc = viewClass as! String
-            if vc == "AirplayRoutePicker" {
-                let pickerView = FlutterRoutePickerView(messenger: _messenger, viewId: viewId, arguments: argumens)
+        let arguments = args as! [String: Any]
+        
+        if let viewClass = arguments["class"] as? String {
+            if viewClass == "AirplayRoutePicker" {
+                // Pass the pluginInstance when creating the FlutterRoutePickerView
+                let pickerView = FlutterRoutePickerView(
+                    messenger: _messenger,
+                    viewId: viewId,
+                    arguments: arguments,
+                    pluginInstance: pluginInstance
+                )
                 return pickerView
             }
-            else if vc == "FlutterAVPlayerView" {
-                let pickerView = FlutterAVPlayer(frame: frame, viewIdentifier: viewId, arguments: argumens, binaryMessenger: _messenger)
+            else if viewClass == "FlutterAVPlayerView" {
+                let pickerView = FlutterAVPlayer(frame: frame, viewIdentifier: viewId, arguments: arguments, binaryMessenger: _messenger)
                 return pickerView
             }
         }
-        
         return UIView() as! FlutterPlatformView
     }
     
