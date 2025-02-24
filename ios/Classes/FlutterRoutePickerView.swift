@@ -1,16 +1,10 @@
-//
-//  FlutterRoutePickerView.swift
-//  flutter_to_airplay
-//
-//  Created by Junaid Rehmat on 22/08/2020.
-//
 import Foundation
 import AVKit
 import MediaPlayer
 import Flutter
 
 class FlutterRoutePickerView: NSObject, FlutterPlatformView {
-    private var _flutterRoutePickerView: UIView
+    public var _flutterRoutePickerView: UIView
     private var _delegate: AVRoutePickerViewDelegate?
     public var buttonImageView: UIImageView!
     public var mainTintColor: UIColor!
@@ -26,16 +20,20 @@ class FlutterRoutePickerView: NSObject, FlutterPlatformView {
     ) {
         // Initialize the _flutterRoutePickerView first
         if #available(iOS 11.0, *) {
-            let tempView = AVRoutePickerView(frame: .init(x: 0.0, y: 0.0, width: 44.0, height: 44.0))
+            let tempView: AVRoutePickerView = AVRoutePickerView(frame: .init(x: 0.0, y: 0.0, width: 44.0, height: 44.0))
+            tempView.tintColor = .clear
+            tempView.activeTintColor = .clear
             self._flutterRoutePickerView = tempView
+            
         } else {
             let tempView = MPVolumeView(frame: .init(x: 0.0, y: 0.0, width: 44.0, height: 44.0))
             tempView.showsVolumeSlider = false
+            tempView.tintColor = .clear
             self._flutterRoutePickerView = tempView
         }
         
         super.init()
-
+        
         // Initialize buttonImageView
         self.pluginInstance = pluginInstance
         self.pluginInstance?.storeFlutterRoutePickerView(view: self)
@@ -46,7 +44,8 @@ class FlutterRoutePickerView: NSObject, FlutterPlatformView {
         // Adjust buttonImageView frame based on _flutterRoutePickerView's size
         _buttonImageView.frame = CGRect(x: 0, y: 0, width: self._flutterRoutePickerView.frame.size.width, height: self._flutterRoutePickerView.frame.size.height)
         self._flutterRoutePickerView.addSubview(self.buttonImageView)
-        self._flutterRoutePickerView.tintColor = .clear
+        hidePicker()
+        
         // Set tint color and background color if available in arguments
         if #available(iOS 11.0, *) {
             if let tintColor = arguments["tintColor"] {
@@ -71,7 +70,6 @@ class FlutterRoutePickerView: NSObject, FlutterPlatformView {
                     (self._flutterRoutePickerView as! AVRoutePickerView).prioritizesVideoDevices = prioritizesVideoDevices
                 }
             }
-
             // Set up the delegate for the route picker
             self._delegate = FlutterRoutePickerDelegate(viewId: viewId, messenger: messenger, flutterRoutePickerView:self)
             (self._flutterRoutePickerView as! AVRoutePickerView).delegate = self._delegate
@@ -79,7 +77,10 @@ class FlutterRoutePickerView: NSObject, FlutterPlatformView {
             pluginInstance.storeFlutterRoutePickerView(view: self) 
         }
     }
-
+    public func hidePicker(){
+        self._flutterRoutePickerView.tintColor = .clear
+        self._flutterRoutePickerView.backgroundColor = .clear
+    }
     func view() -> UIView {
         return _flutterRoutePickerView
     }
@@ -93,6 +94,7 @@ class FlutterRoutePickerView: NSObject, FlutterPlatformView {
         )
     }
 }
+
 class FlutterRoutePickerDelegate: NSObject, AVRoutePickerViewDelegate {
     let _methodChannel: FlutterMethodChannel
     weak var flutterRoutePickerView: FlutterRoutePickerView?  // Make it weak to avoid strong reference cycle
@@ -100,15 +102,23 @@ class FlutterRoutePickerDelegate: NSObject, AVRoutePickerViewDelegate {
     init(viewId: Int64, messenger: FlutterBinaryMessenger, flutterRoutePickerView: FlutterRoutePickerView) {
         _methodChannel = FlutterMethodChannel(name: "flutter_to_airplay#\(viewId)", binaryMessenger: messenger)
         self.flutterRoutePickerView = flutterRoutePickerView
+        self.flutterRoutePickerView?._flutterRoutePickerView.tintColor = .clear
     }
 
     func routePickerViewWillBeginPresentingRoutes(_ routePickerView: AVRoutePickerView) {
+        print("routePickerViewWillBeginPresentingRoutes")
+        
+        // Print the actual type of routePickerView
+        print("routePickerView is of type: \(type(of: routePickerView))")
+        
+        // If the delegate is properly assigned, use it directly
         if let flutterRoutePickerView = self.flutterRoutePickerView {
             print("Using the stored FlutterRoutePickerView")
             flutterRoutePickerView.buttonImageView.tintColor = flutterRoutePickerView.activeTintColor
         } else {
             print("Failed to retrieve FlutterRoutePickerView")
         }
+
         _methodChannel.invokeMethod("onShowPickerView", arguments: nil)
     }
 

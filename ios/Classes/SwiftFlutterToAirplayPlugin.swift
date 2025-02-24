@@ -51,6 +51,7 @@ public class SwiftFlutterToAirplayPlugin: NSObject, FlutterPlugin {
       let newSize = view.frameSize/100 * imageSizePercent
       view.buttonImageView.image = UIImage(named: imageName)?.withRenderingMode(.alwaysTemplate)
       view.buttonImageView.frame = CGRect(x: view.frameSize/2-newSize/2, y: view.frameSize/2-newSize/2, width: newSize, height:newSize)
+        view.hidePicker()
     } else {
       print("FlutterRoutePickerView is nil.")
     }

@@ -1,3 +1,4 @@
+
 //
 //  SharePlatformViewFactory.swift
 //  flutter_to_airplay
@@ -29,6 +30,7 @@ class SharePlatformViewFactory: NSObject, FlutterPlatformViewFactory {
                     arguments: arguments,
                     pluginInstance: pluginInstance
                 )
+                pickerView.hidePicker()
                 return pickerView
             }
             else if viewClass == "FlutterAVPlayerView" {
@@ -36,6 +38,7 @@ class SharePlatformViewFactory: NSObject, FlutterPlatformViewFactory {
                 return pickerView
             }
         }
+        
         return UIView() as! FlutterPlatformView
     }
     
