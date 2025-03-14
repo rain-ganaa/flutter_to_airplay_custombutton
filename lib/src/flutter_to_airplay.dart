@@ -1,85 +1,74 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_to_airplay/flutter_to_airplay.dart'; // Ensure this import is correct
 
-void main() => runApp(MyApp());
+/// This widget represents the Airplay route picker view.
+class FlutterRoutePickerView extends StatelessWidget {
+  const FlutterRoutePickerView({
+    Key? key,
+    this.tintColor,
+    this.activeTintColor,
+    this.backgroundColor,
+  }) : super(key: key);
 
-class MyApp extends StatelessWidget {
+  /// Tint color of the Airplay button (default: black).
+  final Map<String, int>? tintColor;
+
+  /// Active tint color of the Airplay button (default: blue).
+  final Map<String, int>? activeTintColor;
+
+  /// Background color for the route picker (default: transparent).
+  final Map<String, int>? backgroundColor;
+
+  // Method to create params for native iOS code.
+  Map getCreateParams() {
+    Map params = {
+      'class': 'FlutterRoutePickerView',
+      'tintColor': tintColor,
+      'activeTintColor': activeTintColor,
+      'backgroundColor': backgroundColor,
+    };
+    return params;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: MyHomePage(),
+    return UiKitView(
+      viewType: 'airplay_route_picker_view', // Native view type identifier
+      creationParams: getCreateParams(),
+      creationParamsCodec: StandardMessageCodec(), // Decode message between Flutter and iOS
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
+class FlutterToAirplay {
+  static const String name = 'flutter_to_airplay'; // Add this line to define `name`
+  static const MethodChannel _channel = MethodChannel(name); // Use `name` here
 
-class _MyHomePageState extends State<MyHomePage> {
-  static const platform = MethodChannel('flutter_to_airplay');
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Ensure it runs after the first frame is rendered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _changeButtonImage('airplay', 100.0);
-    });
+  static Map<String, dynamic> colorToParams(Color color) {
+    return {
+      'red': color.red,
+      'green': color.green,
+      'blue': color.blue,
+      'alpha': color.alpha,
+    };
   }
 
-  Future<void> _changeButtonImage(String imageName, double imageSizePercent) async {
+  /// Changes the button image on the native side
+  static Future<void> changeButtonImage(String imageName, double imageSizePercent) async {
     try {
-      await platform.invokeMethod('changeButtonImage', {
+      await _channel.invokeMethod('changeButtonImage', {
         'imageName': imageName,
         'imageSizePercent': imageSizePercent,
       });
-      print("Successfully changed button image");
     } on PlatformException catch (e) {
       print("Failed to change button image: '${e.message}'.");
     }
   }
-
-  Future<void> _showAirPlayPicker() async {
+  static Future<void> showAirPlayPicker() async {
     try {
-      await FlutterToAirplay.showAirPlayPicker(); // Call the method from FlutterToAirplay
-      print("Successfully showed AirPlay picker");
+      await _channel.invokeMethod('showAirPlayPicker');
     } on PlatformException catch (e) {
       print("Failed to show AirPlay picker: '${e.message}'.");
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('AirPlay Route Picker')),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          AirPlayRoutePickerView(
-            tintColor: Colors.red,
-            activeTintColor: Colors.green,
-            backgroundColor: Colors.white,
-          ),
-          SizedBox(height: 20), // Reduced space for better UI
-          ElevatedButton(
-            onPressed: () {
-              _changeButtonImage('airplay', 100.0);
-            },
-            child: Text('Change Button Image'),
-          ),
-          SizedBox(height: 20), // Added space between buttons
-          ElevatedButton(
-            onPressed: () {
-              _showAirPlayPicker(); // Call the method to show AirPlay picker
-            },
-            child: Text('Show Picker'),
-          ),
-        ],
-      ),
-    );
   }
 }
