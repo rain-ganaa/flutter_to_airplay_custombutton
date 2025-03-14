@@ -84,7 +84,11 @@ class FlutterRoutePickerView: NSObject, FlutterPlatformView {
     func view() -> UIView {
         return _flutterRoutePickerView
     }
-
+    func showAirPlayPicker() {
+        if let routePickerButton = _flutterRoutePickerView.subviews.first(where: { $0 is UIButton }) as? UIButton {
+            routePickerButton.sendActions(for: .touchUpInside)
+        }
+    }
     static func mapToColor(_ map: Dictionary<String, Any>) -> UIColor {
         return UIColor(
             red: CGFloat(map["red"] as! Int) / 255,

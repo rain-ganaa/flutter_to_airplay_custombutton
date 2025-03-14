@@ -39,7 +39,10 @@ public class SwiftFlutterToAirplayPlugin: NSObject, FlutterPlugin {
       } else {
         result(FlutterError(code: "INVALID_ARGUMENT", message: "Image name or size is missing", details: nil))
       }
-    } else {
+    } else if call.method == "showAirPlayPicker" {
+        self.flutterRoutePickerView?.showAirPlayPicker()
+        result(nil)
+    }else {
       result(FlutterMethodNotImplemented)
     }
   }
